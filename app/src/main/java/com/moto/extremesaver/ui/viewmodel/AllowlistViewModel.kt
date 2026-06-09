@@ -9,8 +9,10 @@ import com.moto.extremesaver.data.entity.AllowedAppEntity
 import com.moto.extremesaver.domain.usecase.UpdateAllowlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class InstalledAppInfo(
@@ -43,17 +45,25 @@ class AllowlistViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             val pm = context.packageManager
-            val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Non-system only
-                .sortedBy { pm.getApplicationLabel(it).toString() }
+            // ⚡ Bolt: Pre-calculate package manager labels in a background thread to prevent
+            // expensive IPC calls inside the flow collection loop, which runs on every UI state update.
+            val precomputedApps = withContext(Dispatchers.IO) {
+                pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                    .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Non-system only
+                    .map { appInfo ->
+                        val appName = pm.getApplicationLabel(appInfo).toString()
+                        appInfo to appName
+                    }
+                    .sortedBy { it.second }
+            }
 
             updateAllowlistUseCase.observeAllowedApps().collect { allowedEntities ->
                 val allowedSet = allowedEntities.map { it.packageName }.toSet()
 
-                val appInfoList = installedApps.map { appInfo ->
+                val appInfoList = precomputedApps.map { (appInfo, appName) ->
                     InstalledAppInfo(
                         packageName = appInfo.packageName,
-                        appName = pm.getApplicationLabel(appInfo).toString(),
+                        appName = appName,
                         isAllowed = allowedSet.contains(appInfo.packageName),
                         isSystemApp = false
                     )
