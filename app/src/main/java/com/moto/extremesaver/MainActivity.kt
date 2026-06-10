@@ -166,6 +166,7 @@ class MainActivity : ComponentActivity() {
 
     // Override back button to prevent exiting launcher
     @Deprecated("Deprecated in Java")
+    @android.annotation.SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         // Do nothing to keep user in launcher
     }
