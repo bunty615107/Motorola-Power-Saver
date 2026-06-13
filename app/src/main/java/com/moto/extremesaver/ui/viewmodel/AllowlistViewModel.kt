@@ -9,8 +9,10 @@ import com.moto.extremesaver.data.entity.AllowedAppEntity
 import com.moto.extremesaver.domain.usecase.UpdateAllowlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class InstalledAppInfo(
@@ -43,20 +45,30 @@ class AllowlistViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             val pm = context.packageManager
-            val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Non-system only
-                .sortedBy { pm.getApplicationLabel(it).toString() }
+
+            // ⚡ Bolt: Cache expensive PackageManager calls outside the collect loop
+            // and move them to the IO dispatcher to prevent Main thread blocking.
+            val cachedApps = withContext(Dispatchers.IO) {
+                pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                    .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Non-system only
+                    .map { appInfo ->
+                        InstalledAppInfo(
+                            packageName = appInfo.packageName,
+                            appName = pm.getApplicationLabel(appInfo).toString(),
+                            isAllowed = false,
+                            isSystemApp = false
+                        )
+                    }
+                    .sortedBy { it.appName }
+            }
 
             updateAllowlistUseCase.observeAllowedApps().collect { allowedEntities ->
                 val allowedSet = allowedEntities.map { it.packageName }.toSet()
 
-                val appInfoList = installedApps.map { appInfo ->
-                    InstalledAppInfo(
-                        packageName = appInfo.packageName,
-                        appName = pm.getApplicationLabel(appInfo).toString(),
-                        isAllowed = allowedSet.contains(appInfo.packageName),
-                        isSystemApp = false
-                    )
+                // ⚡ Bolt: Use the cached apps, only updating the isAllowed flag.
+                // This eliminates O(N) getApplicationLabel() calls per toggle.
+                val appInfoList = cachedApps.map { app ->
+                    app.copy(isAllowed = allowedSet.contains(app.packageName))
                 }
 
                 _uiState.update { AllowlistUiState(apps = appInfoList, isLoading = false) }
