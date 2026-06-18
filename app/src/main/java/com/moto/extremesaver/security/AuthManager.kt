@@ -1,7 +1,9 @@
 package com.moto.extremesaver.security
 
 import android.content.Context
+import android.os.Build
 import android.hardware.biometrics.BiometricPrompt
+import android.hardware.biometrics.BiometricManager.Authenticators
 import android.os.CancellationSignal
 
 class AuthManager(private val context: Context) {
@@ -9,7 +11,13 @@ class AuthManager(private val context: Context) {
         val builder = BiometricPrompt.Builder(context)
             .setTitle("Exit Extreme Saver Mode")
             .setSubtitle("Authenticate to restore standard mode")
-            .setDeviceCredentialAllowed(true) // Allows standard PIN/Pattern fallback
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            builder.setAllowedAuthenticators(Authenticators.BIOMETRIC_WEAK or Authenticators.DEVICE_CREDENTIAL)
+        } else {
+            @Suppress("DEPRECATION")
+            builder.setDeviceCredentialAllowed(true)
+        }
 
         val prompt = builder.build()
         val executor = context.mainExecutor

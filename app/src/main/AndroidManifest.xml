@@ -8,10 +8,12 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
     <application
         android:name=".ExtremeSaverApp"
         android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
         android:label="Extreme Saver Mode"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExtremeSaver">

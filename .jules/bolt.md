@@ -1,3 +1,3 @@
-## 2024-06-10 - Expensive Android PackageManager calls on Main Thread
-**Learning:** In Android apps, calling `PackageManager` methods like `getApplicationLabel` involves IPC (Inter-Process Communication) and can be extremely slow. The `AllowlistViewModel` was not only making these calls on the main thread but repeating them for *every* app inside a `collect` block whenever the allowlist changed, causing severe UI lag.
-**Action:** Always move `PackageManager` queries to `Dispatchers.IO` and cache static values (like app names/icons) during initialization instead of re-evaluating them in reactive flow collections.
+## 2026-06-09 - AllowlistViewModel PackageManager Performance
+**Learning:** Calling `PackageManager.getApplicationLabel()` repeatedly inside a Flow `collect` block causes unnecessary IPC calls and performance bottlenecks when the UI state updates, especially for lists.
+**Action:** Pre-compute expensive PackageManager lookups outside the Flow collection when the underlying data (installed apps) hasn't changed, mapping them into memory first.
