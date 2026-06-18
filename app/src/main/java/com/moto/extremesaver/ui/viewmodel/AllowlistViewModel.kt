@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.annotation.SuppressLint
 import com.moto.extremesaver.data.entity.AllowedAppEntity
 import com.moto.extremesaver.domain.usecase.UpdateAllowlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ data class AllowlistUiState(
     val isLoading: Boolean = true
 )
 
+@SuppressLint("StaticFieldLeak")
 @HiltViewModel
 class AllowlistViewModel @Inject constructor(
     private val updateAllowlistUseCase: UpdateAllowlistUseCase,
