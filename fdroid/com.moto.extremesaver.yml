@@ -1,0 +1,25 @@
+Categories:
+  - System
+  - Efficiency
+License: Apache-2.0
+AuthorName: bunty615107
+Name: Motorola Power Saver
+AutoName: Motorola Power Saver
+Summary: Aggressive battery optimization for Motorola Android devices
+Description: |-
+  Extreme Saver Mode is an ultra-aggressive battery optimization launcher and background policy enforcement engine designed for Motorola Android devices. By severely limiting background activity, it extracts maximum battery life out of your device.
+
+  The app features a robust allowlist that permits only essential, user-selected applications to run. This ensures that non-essential apps cannot drain battery life in the background. Our custom DigitalClock leverages smart recomposition to prevent unnecessary UI updates and reduce CPU wakeups.
+
+  To further reduce resource consumption, the application utilizes PackageManager IO offloading, preventing expensive disk reads during app querying. Additionally, BatteryStatus relies entirely on event-driven updates rather than polling loops, completely eliminating unnecessary CPU activity.
+
+  We respect your privacy. Extreme Saver Mode is fully open-source and no data is collected, tracked, or transmitted off your device.
+RepoType: git
+Repo: https://github.com/bunty615107/Motorola-Power-Saver
+Builds:
+  - versionCode: 1
+    versionName: 1.0.0
+    gradle: true
+    output: app/build/outputs/apk/release/*.apk
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
