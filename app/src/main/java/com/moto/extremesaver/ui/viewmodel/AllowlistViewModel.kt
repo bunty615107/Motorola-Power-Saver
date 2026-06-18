@@ -46,31 +46,28 @@ class AllowlistViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            val pm = context.packageManager
-
-            // ⚡ Bolt: Cache expensive PackageManager calls outside the collect loop
-            // and move them to the IO dispatcher to prevent Main thread blocking.
-            val cachedApps = withContext(Dispatchers.IO) {
+            // ⚡ Bolt Optimization: Move expensive PackageManager IPC calls off the main thread.
+            // Also cache the app labels to avoid redundant getApplicationLabel calls inside the flow collector.
+            val cachedAppInfo = withContext(Dispatchers.IO) {
+                val pm = context.packageManager
                 pm.getInstalledApplications(PackageManager.GET_META_DATA)
                     .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Non-system only
                     .map { appInfo ->
-                        InstalledAppInfo(
-                            packageName = appInfo.packageName,
-                            appName = pm.getApplicationLabel(appInfo).toString(),
-                            isAllowed = false,
-                            isSystemApp = false
-                        )
+                        Pair(appInfo.packageName, pm.getApplicationLabel(appInfo).toString())
                     }
-                    .sortedBy { it.appName }
+                    .sortedBy { it.second }
             }
 
             updateAllowlistUseCase.observeAllowedApps().collect { allowedEntities ->
                 val allowedSet = allowedEntities.map { it.packageName }.toSet()
 
-                // ⚡ Bolt: Use the cached apps, only updating the isAllowed flag.
-                // This eliminates O(N) getApplicationLabel() calls per toggle.
-                val appInfoList = cachedApps.map { app ->
-                    app.copy(isAllowed = allowedSet.contains(app.packageName))
+                val appInfoList = cachedAppInfo.map { (packageName, appName) ->
+                    InstalledAppInfo(
+                        packageName = packageName,
+                        appName = appName,
+                        isAllowed = allowedSet.contains(packageName),
+                        isSystemApp = false
+                    )
                 }
 
                 _uiState.update { AllowlistUiState(apps = appInfoList, isLoading = false) }
