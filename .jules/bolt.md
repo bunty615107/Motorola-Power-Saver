@@ -13,3 +13,7 @@
 ## 2026-06-09 - AllowlistViewModel PackageManager Performance
 **Learning:** Calling `PackageManager.getApplicationLabel()` repeatedly inside a Flow `collect` block causes unnecessary IPC calls and performance bottlenecks when the UI state updates, especially for lists.
 **Action:** Pre-compute expensive PackageManager lookups outside the Flow collection when the underlying data (installed apps) hasn't changed, mapping them into memory first.
+
+## 2024-05-25 - Avoid redundant polling UI update fallback in BatteryStatus
+**Learning:** Polling UI update loop in Compose composables runs redundantly. In `BatteryStatus.kt`, `LaunchedEffect` loop constantly refreshes every 30s. This acts as a fallback but forces a recomposition loop that defeats the Extreme Saver app goal. Since UI state comes from the `BatteryChangedReceiver`, updating values locally bypasses the overarching pattern, unnecessarily wakes up the main thread and introduces unwanted UI lags.
+**Action:** Always extract values from ViewModels which observes global states updated directly by `BroadcastReceivers` rather than polling inside Composable functions.
