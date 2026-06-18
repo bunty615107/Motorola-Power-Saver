@@ -22,8 +22,16 @@ fun DigitalClock(modifier: Modifier = Modifier) {
 
     LaunchedEffect(Unit) {
         while (true) {
-            currentTimeMillis = System.currentTimeMillis()
-            delay(1_000L)
+            val now = System.currentTimeMillis()
+            currentTimeMillis = now
+
+            // The clock only displays hours and minutes (no seconds).
+            // Waking up the CPU every second wastes battery.
+            // Calculate exactly how many milliseconds are left until the next minute starts
+            // and sleep until then, reducing recompositions from 60/min to 1/min.
+            val cal = Calendar.getInstance().apply { timeInMillis = now }
+            val millisUntilNextMinute = 60_000L - (cal.get(Calendar.SECOND) * 1000L + cal.get(Calendar.MILLISECOND))
+            delay(millisUntilNextMinute)
         }
     }
 
