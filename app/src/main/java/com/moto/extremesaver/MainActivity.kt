@@ -105,7 +105,12 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-        registerReceiver(batteryReceiver, BatteryChangedReceiver.createIntentFilter())
+        androidx.core.content.ContextCompat.registerReceiver(
+            this,
+            batteryReceiver,
+            BatteryChangedReceiver.createIntentFilter(),
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private fun checkAndRequestWriteSettings() {
@@ -166,6 +171,7 @@ class MainActivity : ComponentActivity() {
 
     // Override back button to prevent exiting launcher
     @Deprecated("Deprecated in Java")
+    @Suppress("MissingSuperCall")
     override fun onBackPressed() {
         // Do nothing to keep user in launcher
     }

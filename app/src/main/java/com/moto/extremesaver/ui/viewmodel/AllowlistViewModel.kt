@@ -5,12 +5,15 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.annotation.SuppressLint
 import com.moto.extremesaver.data.entity.AllowedAppEntity
 import com.moto.extremesaver.domain.usecase.UpdateAllowlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class InstalledAppInfo(
@@ -25,6 +28,7 @@ data class AllowlistUiState(
     val isLoading: Boolean = true
 )
 
+@SuppressLint("StaticFieldLeak")
 @HiltViewModel
 class AllowlistViewModel @Inject constructor(
     private val updateAllowlistUseCase: UpdateAllowlistUseCase,
@@ -42,19 +46,26 @@ class AllowlistViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            val pm = context.packageManager
-            val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Non-system only
-                .sortedBy { pm.getApplicationLabel(it).toString() }
+            // ⚡ Bolt Optimization: Move expensive PackageManager IPC calls off the main thread.
+            // Also cache the app labels to avoid redundant getApplicationLabel calls inside the flow collector.
+            val cachedAppInfo = withContext(Dispatchers.IO) {
+                val pm = context.packageManager
+                pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                    .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } // Non-system only
+                    .map { appInfo ->
+                        Pair(appInfo.packageName, pm.getApplicationLabel(appInfo).toString())
+                    }
+                    .sortedBy { it.second }
+            }
 
             updateAllowlistUseCase.observeAllowedApps().collect { allowedEntities ->
                 val allowedSet = allowedEntities.map { it.packageName }.toSet()
 
-                val appInfoList = installedApps.map { appInfo ->
+                val appInfoList = cachedAppInfo.map { (packageName, appName) ->
                     InstalledAppInfo(
-                        packageName = appInfo.packageName,
-                        appName = pm.getApplicationLabel(appInfo).toString(),
-                        isAllowed = allowedSet.contains(appInfo.packageName),
+                        packageName = packageName,
+                        appName = appName,
+                        isAllowed = allowedSet.contains(packageName),
                         isSystemApp = false
                     )
                 }

@@ -6,6 +6,9 @@ plugins {
 }
 
 android {
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
     namespace = "com.moto.extremesaver"
     compileSdk = 34
 
@@ -27,6 +30,9 @@ android {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+    }
+    lint {
+        disable += setOf("OldTargetApi")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
