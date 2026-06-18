@@ -23,7 +23,11 @@ fun DigitalClock(modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         while (true) {
             currentTimeMillis = System.currentTimeMillis()
-            delay(1_000L)
+            // ⚡ Bolt: Calculates exact ms until the next minute boundary to prevent
+            // 59 unnecessary recompositions per minute, keeping the main thread asleep longer.
+            // Impact: Reduces timer wakeups by ~98% (from 60/min to 1/min).
+            val delayToNextMinute = 60_000L - (currentTimeMillis % 60_000L)
+            delay(delayToNextMinute)
         }
     }
 
