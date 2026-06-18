@@ -79,7 +79,11 @@ fun HomeDashboardScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        BatteryStatus()
+        BatteryStatus(
+            batteryLevel = uiState.batteryLevel,
+            isCharging = uiState.isCharging,
+            estimatedHours = uiState.estimatedHours
+        )
 
         // Drain rate indicator
         if (uiState.drainRatePerHour > 0) {
