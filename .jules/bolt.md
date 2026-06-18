@@ -17,3 +17,6 @@
 ## 2024-05-25 - Avoid redundant polling UI update fallback in BatteryStatus
 **Learning:** Polling UI update loop in Compose composables runs redundantly. In `BatteryStatus.kt`, `LaunchedEffect` loop constantly refreshes every 30s. This acts as a fallback but forces a recomposition loop that defeats the Extreme Saver app goal. Since UI state comes from the `BatteryChangedReceiver`, updating values locally bypasses the overarching pattern, unnecessarily wakes up the main thread and introduces unwanted UI lags.
 **Action:** Always extract values from ViewModels which observes global states updated directly by `BroadcastReceivers` rather than polling inside Composable functions.
+## 2026-06-18 - README Rewrite
+**Learning:** README acts as an essential documentation hub. Ensuring that performance optimization highlights are clear and visually structured effectively communicates the project’s specific aims.
+**Action:** When working on open-source READMEs, incorporate precise examples of optimizations and clear installation/build steps.
