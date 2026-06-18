@@ -17,3 +17,7 @@
 ## 2024-05-25 - Avoid redundant polling UI update fallback in BatteryStatus
 **Learning:** Polling UI update loop in Compose composables runs redundantly. In `BatteryStatus.kt`, `LaunchedEffect` loop constantly refreshes every 30s. This acts as a fallback but forces a recomposition loop that defeats the Extreme Saver app goal. Since UI state comes from the `BatteryChangedReceiver`, updating values locally bypasses the overarching pattern, unnecessarily wakes up the main thread and introduces unwanted UI lags.
 **Action:** Always extract values from ViewModels which observes global states updated directly by `BroadcastReceivers` rather than polling inside Composable functions.
+
+## 2024-06-25 - CI/CD Pipeline Performance
+**Learning:** Adding a caching mechanism for Gradle dependencies in GitHub Actions (`actions/cache`) significantly reduces build times by preventing the download of the same dependencies on every single run, thereby conserving CI minutes and providing faster feedback.
+**Action:** Always include a caching step for dependency managers (like Gradle) when configuring CI workflows.
