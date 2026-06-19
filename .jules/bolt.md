@@ -21,3 +21,6 @@
 ## 2024-06-25 - CI/CD Pipeline Performance
 **Learning:** Adding a caching mechanism for Gradle dependencies in GitHub Actions (`actions/cache`) significantly reduces build times by preventing the download of the same dependencies on every single run, thereby conserving CI minutes and providing faster feedback.
 **Action:** Always include a caching step for dependency managers (like Gradle) when configuring CI workflows.
+## 2026-06-18 - README Rewrite
+**Learning:** README acts as an essential documentation hub. Ensuring that performance optimization highlights are clear and visually structured effectively communicates the project’s specific aims.
+**Action:** When working on open-source READMEs, incorporate precise examples of optimizations and clear installation/build steps.
