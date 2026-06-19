@@ -1,0 +1,77 @@
+name: Issue and PR Bot
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  welcome-and-label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Handle new issues and pull requests
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+
+            if (context.eventName === 'issues') {
+              const issueNumber = context.payload.issue.number;
+
+              // Post welcome comment for issues
+              const issueComment = `Thank you for reporting this issue!\n\nIf you haven't already, please confirm your **Motorola device model** and **Android version** so we can better assist you.\n\nPlease note that our average response time is 48 hours. In the meantime, you can review our [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md) guidelines.`;
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                body: issueComment
+              });
+
+              // Check and create needs-triage label if it doesn't exist
+              const labelName = 'needs-triage';
+              const labelColor = 'e4763b';
+              try {
+                await github.rest.issues.getLabel({
+                  owner,
+                  repo,
+                  name: labelName
+                });
+              } catch (error) {
+                if (error.status === 404) {
+                  await github.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name: labelName,
+                    color: labelColor,
+                    description: 'Issue needs triage'
+                  });
+                } else {
+                  throw error;
+                }
+              }
+
+              // Add the label to the issue
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                labels: [labelName]
+              });
+
+            } else if (context.eventName === 'pull_request') {
+              const prNumber = context.payload.pull_request.number;
+
+              // Post welcome comment for pull requests
+              const prComment = `Thank you for your pull request!\n\nPlease make sure to review our PR checklist found in [pull_request_template.md](https://github.com/${owner}/${repo}/blob/main/pull_request_template.md) before we review your changes.`;
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: prComment
+              });
+            }
