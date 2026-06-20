@@ -24,3 +24,6 @@
 ## 2026-06-18 - README Rewrite
 **Learning:** README acts as an essential documentation hub. Ensuring that performance optimization highlights are clear and visually structured effectively communicates the project’s specific aims.
 **Action:** When working on open-source READMEs, incorporate precise examples of optimizations and clear installation/build steps.
+## 2024-05-24 - [Compose UI Background Collection Fix]
+**Learning:** Using `collectAsState()` in Compose UI keeps Flow collection active even when the screen is in the background, consuming CPU resources unnecessarily on global events (like Battery status).
+**Action:** Always use `collectAsStateWithLifecycle()` to automatically pause state collection when the UI is not visible, significantly extending battery life for background-heavy applications.

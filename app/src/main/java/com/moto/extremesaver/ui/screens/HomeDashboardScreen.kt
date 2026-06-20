@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +35,7 @@ fun HomeDashboardScreen(
     onAllowlistClick: (() -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null
 ) {
-    val uiState = viewModel?.uiState?.collectAsState()?.value ?: DashboardUiState()
+    val uiState = viewModel?.uiState?.collectAsStateWithLifecycle()?.value ?: DashboardUiState()
 
     Column(
         modifier = Modifier
