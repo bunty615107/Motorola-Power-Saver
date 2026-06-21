@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +26,7 @@ fun BatteryDashboardScreen(
     viewModel: BatteryDashboardViewModel,
     onBackClick: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle() // ⚡ Bolt: Use collectAsStateWithLifecycle to prevent background flow collection and UI recomposition when not visible
     val info = uiState.currentInfo
     val batteryColor = if (info.level > 20) LimeGreen else ElectricBlue
 

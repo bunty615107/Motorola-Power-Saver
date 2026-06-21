@@ -24,3 +24,6 @@
 ## 2026-06-18 - README Rewrite
 **Learning:** README acts as an essential documentation hub. Ensuring that performance optimization highlights are clear and visually structured effectively communicates the project’s specific aims.
 **Action:** When working on open-source READMEs, incorporate precise examples of optimizations and clear installation/build steps.
+## 2024-06-21 - Lifecycle-aware StateFlow collection in Jetpack Compose
+**Learning:** Using `collectAsState()` for StateFlows in Jetpack Compose UI components causes background flow collection and UI recomposition even when the app is not visible. This is critical for battery conservation in this power-saving app.
+**Action:** Always use `collectAsStateWithLifecycle()` (from `androidx.lifecycle.compose`) instead of `collectAsState()` for observing StateFlows in Jetpack Compose UI components to prevent unnecessary CPU wakeups when the app is in the background.
